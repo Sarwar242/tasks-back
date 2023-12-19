@@ -3,8 +3,8 @@
 use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\TaskController;
-use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Api\ProjectController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -30,15 +30,17 @@ Route::post('/auth/register', [AuthController::class, 'createUser']);
 Route::post('/auth/login', [AuthController::class, 'loginUser']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/users', [AuthController::class, 'users']);
     Route::post('/auth/logout', [AuthController::class, 'logoutUser']);
+
     // Task routes
     Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
     Route::post('/task/create', [TaskController::class, 'store'])->name('tasks.store');
     Route::get('/task/{task}', [TaskController::class, 'show'])->name('tasks.show');
     Route::put('/task/update/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::put('/task/assign-project/{task}', [TaskController::class, 'assignProject']);
-    Route::put('/task/assign-user/{task}', [TaskController::class, 'assignUser']);
-    Route::put('/task/remove-user/{task}', [TaskController::class, 'removeUser']);
+    Route::post('/task/assign-user/{task}', [TaskController::class, 'assignUser']);
+    Route::post('/task/remove-user/{task}', [TaskController::class, 'removeUser']);
     Route::put('/task/update-status/{task}', [TaskController::class, 'updateStatus']);
     Route::delete('/task/delete/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 

@@ -1,42 +1,36 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\TaskStoreUpdateRequest;
 use App\Models\Task;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
     public function index()
     {
-        $tasks = Task::with('users')->get();
+        $tasks = Task::with(['users', 'project'])->get();
 
         return response()->json([
             'success' => true,
-            'tasks' => $tasks
+            'tasks' => $tasks,
         ]);
     }
 
-    public function store(Request $request) : JsonResponse
+    public function store(TaskStoreUpdateRequest $request): JsonResponse
     {
         $user = auth('sanctum')->user();
-        $request->validate([
-            'name' => 'required',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
-            'description' => 'required',
-            'project_id' => 'required|exists:projects,id',
-        ]);
+        $request->merge(['created_by' => $user->id]);
+        $request->merge(['updated_by' => $user->id]);
 
-        $request->merge(['created_by'=>$user->id]);
-        $request->merge(['updated_by'=>$user->id]);
         Task::create($request->all());
 
         return response()->json([
             'success' => true,
-            'message' => 'Task created successfully'
+            'message' => 'Task created successfully',
         ]);
     }
 
@@ -44,43 +38,35 @@ class TaskController extends Controller
     {
         return response()->json([
             'success' => true,
-            'task' => $task
+            'task' => $task,
         ]);
     }
 
-
-    public function update(Request $request, Task $task)
+    public function update(TaskStoreUpdateRequest $request, Task $task)
     {
         $user = auth('sanctum')->user();
-        $request->validate([
-            'name' => 'required',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
-            'description' => 'required',
-            'project_id' => 'required|exists:projects,id',
-        ]);
-        $request->merge(['updated_by'=>$user->id]);
+        $request->merge(['updated_by' => $user->id]);
+
         $task->update($request->all());
 
         return response()->json([
             'success' => true,
-            'message' => 'Task updated successfully'
+            'message' => 'Task updated successfully',
         ]);
     }
-
 
     public function updateStatus(Request $request, Task $task)
     {
         $user = auth('sanctum')->user();
         $request->validate([
-            'status' => 'required'
+            'status' => 'required',
         ]);
-        $request->merge(['updated_by'=>$user->id]);
+        $request->merge(['updated_by' => $user->id]);
         $task->update($request->all());
 
         return response()->json([
             'success' => true,
-            'message' => 'Status updated successfully'
+            'message' => 'Status updated successfully',
         ]);
     }
 
@@ -88,42 +74,44 @@ class TaskController extends Controller
     {
         $user = auth('sanctum')->user();
         $request->validate([
-            'project_id' => 'required|exists:projects,id'
+            'project_id' => 'required|exists:projects,id',
         ]);
-        $request->merge(['updated_by'=>$user->id]);
+        $request->merge(['updated_by' => $user->id]);
         $task->update($request->all());
 
         return response()->json([
             'success' => true,
-            'message' => 'Status updated successfully'
+            'message' => 'Status updated successfully',
         ]);
     }
 
     public function assignUser(Request $request, Task $task)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id'
+            'user_id' => 'required|exists:users,id',
         ]);
 
-        $task->users()->attach($request->user_id);
+        if (!$task->users()->where('user_id', $request->user_id)->exists()) {
+            $task->users()->attach($request->user_id);
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'User assigned successfully'
+            'message' => 'User assigned successfully',
         ]);
     }
 
     public function removeUser(Request $request, Task $task)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id'
+            'user_id' => 'required|exists:users,id',
         ]);
 
         $task->users()->detach($request->user_id);
 
         return response()->json([
             'success' => true,
-            'message' => 'User removed successfully'
+            'message' => 'User removed successfully',
         ]);
     }
 
@@ -133,7 +121,7 @@ class TaskController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Task deleted successfully'
+            'message' => 'Task deleted successfully',
         ]);
     }
 }

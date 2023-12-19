@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\ProjectStoreUpdateRequest;
 use App\Models\Project;
+use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
@@ -13,40 +15,35 @@ class ProjectController extends Controller
 
         return response()->json([
             'success' => true,
-            'projects' => $projects
+            'projects' => $projects,
         ]);
     }
 
-    public function store(Request $request)
+    public function store(ProjectStoreUpdateRequest $request)
     {
         $user = auth('sanctum')->user();
-        $request->validate([
-            'name'        => 'required',
-            'description' => 'required',
-        ]);
-        $request->merge(['created_by'=>$user->id]);
-        $request->merge(['updated_by'=>$user->id]);
+
+        $request->merge(['created_by' => $user->id]);
+        $request->merge(['updated_by' => $user->id]);
+
         Project::create($request->all());
 
         return response()->json([
             'success' => true,
-            'message' => 'Project created successfully'
+            'message' => 'Project created successfully',
         ]);
     }
 
-    public function update(Request $request, Project $project)
+    public function update(ProjectStoreUpdateRequest $request, Project $project)
     {
         $user = auth('sanctum')->user();
-        $request->validate([
-            'name' => 'required',
-            'description' => 'required',
-        ]);
-        $request->merge(['updated_by'=>$user->id]);
+
+        $request->merge(['updated_by' => $user->id]);
         $project->update($request->all());
 
         return response()->json([
             'success' => true,
-            'message' => 'Project updated successfully'
+            'message' => 'Project updated successfully',
         ]);
     }
 
@@ -54,7 +51,7 @@ class ProjectController extends Controller
     {
         return response()->json([
             'success' => true,
-            'project' => $project
+            'project' => $project,
         ]);
     }
 
@@ -62,14 +59,15 @@ class ProjectController extends Controller
     {
         $user = auth('sanctum')->user();
         $request->validate([
-            'status' => 'required'
+            'status' => 'required',
         ]);
-        $request->merge(['updated_by'=>$user->id]);
+
+        $request->merge(['updated_by' => $user->id]);
         $project->update($request->all());
 
         return response()->json([
             'success' => true,
-            'message' => 'Status updated successfully'
+            'message' => 'Status updated successfully',
         ]);
     }
 
@@ -79,7 +77,7 @@ class ProjectController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Project deleted successfully'
+            'message' => 'Project deleted successfully',
         ]);
     }
 }
